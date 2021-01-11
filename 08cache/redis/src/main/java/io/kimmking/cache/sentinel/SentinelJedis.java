@@ -47,10 +47,9 @@ public final class SentinelJedis {
         config.setTestOnBorrow(TEST_ON_BORROW);
         config.setTestWhileIdle(TEST_WHILE_IDLE);
         config.setTestOnReturn(TEST_ON_RETURN);
-        String masterName = "mymaster";
+        String masterName = "redis-1";
         Set<String> sentinels = new HashSet<String>();
         sentinels.add(new HostAndPort("127.0.0.1",26379).toString());
-        sentinels.add(new HostAndPort("127.0.0.1",26380).toString());
         JedisSentinelPool pool = new JedisSentinelPool(masterName, sentinels, config, TIMEOUT, null);
         return pool;
     }

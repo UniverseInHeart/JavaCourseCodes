@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // 开启spring cache
-    @Cacheable //(key="methodName",value="userCache")
+    @Cacheable (key="methodName",value="userCache")
     public List<User> list(){
         return userMapper.list();
     }

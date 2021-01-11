@@ -3,6 +3,9 @@ package io.kimmking.cache;
 import com.alibaba.fastjson.JSON;
 import io.kimmking.cache.cluster.ClusterJedis;
 import io.kimmking.cache.sentinel.SentinelJedis;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.sync.RedisCommands;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import redis.clients.jedis.Jedis;
@@ -17,12 +20,12 @@ public class RedisApplication {
 	public static void main(String[] args) {
 
 		// C1.最简单demo
-		Jedis jedis = new Jedis("localhost", 6379);
-		System.out.println(jedis.info());
-		jedis.set("uptime", new Long(System.currentTimeMillis()).toString());
-		System.out.println(jedis.get("uptime"));
+//		Jedis jedis = new Jedis("localhost", 6379);
+//		System.out.println(jedis.info());
+//		jedis.set("uptime", new Long(System.currentTimeMillis()).toString());
+//		System.out.println(jedis.get("uptime"));
 
-		// C2.基于sentinel和连接池的demo
+//		// C2.基于sentinel和连接池的demo
 //		Jedis sjedis = SentinelJedis.getJedis();
 //		System.out.println(sjedis.info());
 //		sjedis.set("uptime2", new Long(System.currentTimeMillis()).toString());
@@ -39,6 +42,31 @@ public class RedisApplication {
 
 		// 作业：
 		// 1. 参考C2，实现基于Lettuce和Redission的Sentinel配置
+
+		//基于Lettuce 简单的demo start
+//		RedisClient redisClient = RedisClient.create("redis://@localhost:6379");
+//		StatefulRedisConnection<String, String> connection = redisClient.connect();
+//		RedisCommands<String, String> syncCommands = connection.sync();
+//
+//		syncCommands.set("key", "Hello, Redis!");
+//
+//		System.out.println(syncCommands.get("key"));
+//
+//		connection.close();
+//		redisClient.shutdown();
+		// end
+
+		//基于Lettuce sentinel start
+		RedisClient redisClient = RedisClient.create("redis-sentinel://localhost:26379,localhost:26380/0#mymaster");
+
+		StatefulRedisConnection<String, String> connection = redisClient.connect();
+
+		System.out.println("Connected to Redis using Redis Sentinel");
+
+		connection.close();
+		redisClient.shutdown();
+		// end
+
 		// 2. 实现springboot/spring data redis的sentinel配置
 		// 3. 使用jedis命令，使用java代码手动切换 redis 主从
 		// 	  Jedis jedis1 = new Jedis("localhost", 6379);
