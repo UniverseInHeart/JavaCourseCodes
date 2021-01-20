@@ -1,4 +1,4 @@
-package io.github.kimmking.gateway.inbound;
+package java0.nio01.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -10,26 +10,13 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.List;
+public class NettyHttpServer {
+    public static void main(String[] args) throws InterruptedException {
 
+        int port = 8808;
 
-public class HttpInboundServer {
-
-    private int port;
-    
-    private List<String> proxyServers;
-
-    public HttpInboundServer(int port, List<String> proxyServers) {
-        this.port=port;
-        this.proxyServers = proxyServers;
-    }
-
-    public void run() throws Exception {
-
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(2);
         EventLoopGroup workerGroup = new NioEventLoopGroup(16);
 
         try {
@@ -45,7 +32,8 @@ public class HttpInboundServer {
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.INFO)).childHandler(new HttpInboundInitializer(this.proxyServers));
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(new HttpInitializer());
 
             Channel ch = b.bind(port).sync().channel();
             System.out.println("开启netty http服务器，监听地址和端口为 http://127.0.0.1:" + port + '/');
@@ -54,5 +42,7 @@ public class HttpInboundServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+
+
     }
 }
