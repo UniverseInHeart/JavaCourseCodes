@@ -1,35 +1,49 @@
 package io.kimmking.kmq.core;
 
-import lombok.SneakyThrows;
-
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class Kmq {
 
-    public Kmq(String topic, int capacity) {
+    private static final Map<String, Integer> topicToIndex = new HashMap<>();
+    private static Integer pIndex = 0;
+
+    public Kmq(String topic, String consumer, int capacity) {
         this.topic = topic;
+        this.consumer = consumer;
         this.capacity = capacity;
-        this.queue = new LinkedBlockingQueue(capacity);
+        this.queue = new KmqMessage[capacity];
     }
 
     private String topic;
 
+    private String consumer;
+
     private int capacity;
 
-    private LinkedBlockingQueue<KmqMessage> queue;
+    private KmqMessage[] queue;
 
-    public boolean send(KmqMessage message) {
-        return queue.offer(message);
+    public void send(KmqMessage message) {
+        queue[pIndex] = message;
+        pIndex++;
     }
 
     public KmqMessage poll() {
-        return queue.poll();
-    }
-
-    @SneakyThrows
-    public KmqMessage poll(long timeout) {
-        return queue.poll(timeout, TimeUnit.MILLISECONDS);
+        boolean containsKey = topicToIndex.containsKey(consumer);
+        if (containsKey) {
+            int index = topicToIndex.get(consumer);
+            if (index > pIndex) {
+                return null;
+            }
+            KmqMessage kmqMessage = queue[index];
+            topicToIndex.put(consumer, index++);
+            return kmqMessage;
+        }
+        if (pIndex == 0) {
+            return null;
+        }
+        topicToIndex.put(consumer, 1);
+        return queue[0];
     }
 
 }
